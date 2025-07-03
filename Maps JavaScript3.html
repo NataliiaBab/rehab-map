@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта реабілітації</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column; /* Змінено на column, щоб елементи розташовувалися один під одним */
+            justify-content: flex-start; /* Вирівнювання елементів на початку контейнера */
+            align-items: center; /* Центрування елементів по горизонталі */
+            min-height: 100vh;
+            padding-top: 20px; /* Додано відступ зверху, щоб назва не прилипала до краю */
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px; /* Відступ між назвою та картою */
+            font-size: 2.5em; /* Розмір тексту */
+            font-weight: bold; /* Жирний шрифт */
+        }
+        #map {
+            width: 90%;
+            height: 700px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px; /* Відступ під картою */
+        }
+        .info-window-content h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .info-window-content p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .info-window-content strong {
+            color: #2c3e50;
+        }
+        .info-window-content a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .info-window-content a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Карта реабілітації</h1> 
+
+    <div id="map"></div>
+
+    <script>
+        // Дані про реабілітаційні центри з доданими координатами
+        const rehabilitation_centers = [
+            {
+                "name": "Центр соціальної та фізичної реабілітації людей з інвалідністю \"Перспектива\"",
+                "address": "вулиця Олени Теліги, 15/1, Черкаси, Черкаська область, 18000",
+                "coordinates": { lat: 49.44490, lng: 32.06280 },
+                "services_type": ["Фізична реабілітація", "Соціальна адаптація"],
+                "phone_number": "+380 472 569 495",
+                "email": null,
+                "website_social_media": null,
+                "working_hours": null,
+                "description": "Центр, що займається соціальною та фізичною реабілітацією людей з інвалідністю.",
+                "specialization": ["Реабілітація для людей з інвалідністю"],
+                "accessibility": "Інформація не знайдена, але ймовірно має відповідні умови.",
+                "funding": null
+            },
+            {
+                "name": "Реабілітаційний центр Олександра Бевза",
+                "address": "вулиця Сумгаїтська, 10, Черкаси, Черкаська область, 18000",
+                "coordinates": { lat: 49.40050, lng: 32.02530 },
+                "services_type": ["Фізична реабілітація", "Оздоровлення", "Відновлення після травм та поранень", "Покращення фізичної форми"],
+                "phone_number": "+380 97 960 2489",
+                "email": null,
+                "website_social_media": "https://www.instagram.com/massage.cherkassy_?igsh=MTN2dGhhanJjeDY1cA==",
+                "working_hours": "Понеділок-субота: 09:00–20:00, Неділя: Зачинено",
+                "description": "Центр реабілітації, який надає послуги з оздоровлення та відновлення.",
+                "specialization": ["Реабілітація військових та ветеранів", "Відновлення після травм", "Поранення", "Ампутації", "Контузії", "Мінно-вибухові травми"],
+                "accessibility": "Інформація не знайдена.",
+                "funding": ["Безоплатні послуги для військових та ветеранів"]
+            },
+            {
+                "name": "Реабілітаційне відділення. Черкаська обласна лікарня (включно з центром RECOVERY)",
+                "address": "вулиця Менделєєва, 3, Черкаси, Черкаська область, 18000",
+                "coordinates": { lat: 49.44480, lng: 31.99610 },
+                "services_type": ["Комплексна реабілітація", "Фізична терапія", "Ерготерапія", "Терапія мовлення", "Психологічна підтримка", "Масаж"],
+                "phone_number": "+380 472 334 385",
+                "email": null,
+                "website_social_media": "http://obllik.ck.ua/node/4 (сайт обласної лікарні), https://recoveryua.org/ (сайт проєкту RECOVERY)",
+                "working_hours": "Відкрито 24 години (лікарня)",
+                "description": "Реабілітаційне відділення обласної лікарні, на базі якого відкрито сучасний центр RECOVERY, що надає якісну допомогу захисникам України.",
+                "specialization": ["Неврологічна реабілітація", "Опорно-рухова реабілітація", "Реабілітація при післятравматичних станах", "Відновлення після мінно-вибухових травм", "Відновлення ходи", "Відновлення втрачених функцій верхніх та нижніх кінцівок", "Реабілітація поранених військових"],
+                "accessibility": "Так (широкі дверні прорізи, відсутність порогів, медичне антиковзке покриття підлоги, поручні, санітарні кімнати для осіб на кріслах колісних, душові із сидіннями й поручнями)",
+                "funding": ["Безоплатні послуги", "НСЗУ (Національна служба здоров'я України)", "Фінансування від проєкту RECOVERY"]
+            },
+            {
+                "name": "Реабілітаційний центр VIDNOVA",
+                "address": "вулиця Михайла Грушевського, 50, Черкаси, Черкаська область, 18000",
+                "coordinates": { lat: 49.41880, lng: 32.02980 },
+                "services_type": ["Комплексна реабілітація", "Фізіотерапія", "Кінезіотерапія", "Масажі", "Ортопедія стопи", "Консультації лікарів ФРМ"],
+                "phone_number": "+380 50 202 4202",
+                "email": null,
+                "website_social_media": "https://vidnova.center/",
+                "working_hours": "Понеділок-п'ятниця: 09:00–20:00, Субота: 10:00–16:00, Неділя: Зачинено",
+                "description": "Центр комплексної реабілітації, що допомагає при захворюваннях хребта, суглобів, м'язів та сполучних тканин, а також відновлює після операцій, травм, переломів, ДТП та ускладнень після хвороб.",
+                "specialization": ["Реабілітація травм війни", "Реабілітація після баротравми (контузії)", "Реабілітація після ЧМТ (черепно-мозкових травм)", "Реабілітація після втрати кінцівки"],
+                "accessibility": "Інформація не знайдена.",
+                "funding": ["Платні послуги (ймовірно, але не підтверджено)"]
+            },
+            {
+                "name": "Комунальний заклад \"Черкаський навчально-реабілітаційний центр \"Країна добра Черкаської обласної ради\"",
+                "address": "вулиця Подолинського, 11/1, Черкаси, Черкаська область, 18000",
+                "coordinates": { lat: 49.43100, lng: 32.06450 },
+                "services_type": ["Освітні послуги", "Реабілітаційні послуги"],
+                "phone_number": "+380 472 732 003",
+                "email": null,
+                "website_social_media": "http://www.krainadobra.ck.ua/",
+                "working_hours": "Понеділок-п'ятниця: 08:00–19:00, Субота-неділя: Зачинено",
+                "description": "Заклад загальної середньої освіти для осіб з особливими освітніми потребами, що має дошкільний підрозділ, спеціальну загальноосвітню школу-інтернат та реабілітаційне відділення.",
+                "specialization": ["Реабілітація дітей з особливими освітніми потребами"],
+                "accessibility": "Ймовірно, має відповідні умови як заклад для осіб з особливими освітніми потребами.",
+                "funding": ["Комунальний заклад (фінансується обласною радою)"]
+            },
+            {
+                "name": "Черкаський обласний госпіталь ветеранів війни",
+                "address": "м. Черкаси, вул. Дахнівська січ, 1",
+                "coordinates": { lat: 49.48028198420155, lng: 32.001587480254294 },
+                "services_type": ["Медична допомога", "Реабілітація"],
+                "phone_number": "Інформація не вказана", // Потрібно знайти, якщо є
+                "email": null,
+                "website_social_media": null, // Потрібно знайти, якщо є
+                "working_hours": "Інформація не вказана", // Потрібно знайти, якщо є
+                "description": "Обласний госпіталь, що надає медичну допомогу та реабілітацію ветеранам війни.",
+                "specialization": ["Реабілітація ветеранів війни", "Медичне обслуговування ветеранів"],
+                "accessibility": "Ймовірно, має відповідні умови.",
+                "funding": "Державне фінансування"
+            },
+        ];
+
+        let map;
+        let infoWindow;
+
+        function initMap() {
+            // Центр карти - Черкаси. Можна обчислити середнє значення координат для кращого охоплення
+            // Або встановити вручну, щоб усі маркери були видимі
+            const cherkasyCenter = { lat: 49.435, lng: 32.030 }; 
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 11, // Масштаб карти, щоб було видно всі маркери
+                center: cherkasyCenter,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+            });
+
+            infoWindow = new google.maps.InfoWindow();
+
+            rehabilitation_centers.forEach((center) => {
+                if (center.coordinates) {
+                    const marker = new google.maps.Marker({
+                        position: center.coordinates,
+                        map: map,
+                        title: center.name,
+                    });
+
+                    marker.addListener("click", () => {
+                        if (infoWindow) {
+                            infoWindow.close();
+                        }
+
+                        // Формуємо вміст вікна
+                        let contentString = `
+                            <div class="info-window-content">
+                                <h3>${center.name}</h3>
+                                <p><strong>Адреса:</strong> ${center.address}</p>
+                                <p><strong>Телефон:</strong> ${center.phone_number || 'Не вказано'}</p>
+                                ${center.email ? `<p><strong>Email:</strong> <a href="mailto:${center.email}">${center.email}</a></p>` : ''}
+                                ${center.website_social_media ? `<p><strong>Веб-сайт / Соцмережі:</strong> <a href="${center.website_social_media.split(' ')[0]}" target="_blank">${center.website_social_media.split(' ')[0]}</a></p>` : ''}
+                                ${center.working_hours ? `<p><strong>Години роботи:</strong> ${center.working_hours}</p>` : ''}
+                                <p><strong>Тип послуг:</strong> ${center.services_type ? center.services_type.join(', ') : 'Не вказано'}</p>
+                                <p><strong>Спеціалізація:</strong> ${center.specialization ? center.specialization.join(', ') : 'Не вказано'}</p>
+                                <p><strong>Доступність:</strong> ${center.accessibility || 'Не вказано'}</p>
+                                <p><strong>Фінансування:</strong> ${center.funding ? center.funding.join(', ') : 'Не вказано'}</p>
+                                <p><strong>Опис:</strong> ${center.description || 'Немає опису'}</p>
+                            </div>
+                        `;
+
+                        infoWindow.setContent(contentString);
+                        infoWindow.open(map, marker);
+                    });
+                }
+            });
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgN5mqRvpizABTcG-paqc6tNeDUhJ_vBM&callback=initMap"></script>
+</body>
+</html>
